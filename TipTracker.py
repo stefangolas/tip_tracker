@@ -10,6 +10,7 @@ from tkinter import ttk
 import json
 import os
 import copy
+import sys
 
 from pyhamilton import (HamiltonInterface,  LayoutManager, 
  Plate96, Tip96, initialize, tip_pick_up, tip_eject, 
@@ -19,6 +20,7 @@ from pyhamilton import (HamiltonInterface,  LayoutManager,
 
 class TipRackEditor:
     def __init__(self, json_path):
+        self.json_path = json_path
         root = tk.Tk()
         self.root = root
         with open(json_path, "r") as f:
@@ -35,7 +37,10 @@ class TipRackEditor:
         self.tree.heading("num_tips", text="Number of Tips")
 
         # Populate the treeview with the JSON data
-        for stack in self.json_data:
+        for stack_id in self.json_data:
+            print(stack_id)
+            stack = self.json_data[stack_id]
+            print(stack["stack_name"])
             stack_node = self.tree.insert("", "end", text=stack["stack_name"], values=(stack["max_tip_racks"]))
             for rack in stack["racks"]:
                 self.tree.insert(stack_node, "end", text=rack["rack_name"], values=(rack["num_tips"]))
@@ -48,9 +53,11 @@ class TipRackEditor:
         save_button = tk.Button(self.root, text="Save", command=self.save)
         save_button.pack()
         
+        remove_stack_button = tk.Button(root, text="Remove Stack", command=self.remove_stack)
         add_stack_button = tk.Button(root, text="Add Stack", command=self.add_stack)
         add_rack_button = tk.Button(root, text="Add Rack", command=self.add_rack)
         reset_tips_button = tk.Button(root, text="Reset Tips", command=self.reset_tips)
+        remove_stack_button.pack()
         add_stack_button.pack()
         add_rack_button.pack()
         reset_tips_button.pack()
@@ -68,27 +75,55 @@ class TipRackEditor:
         change_name_button.pack()
 
         # Create a label for the entry form for changing the maximum number of racks
-        max_label = tk.Label(self.root, text="Enter new maximum number of racks:")
-        max_label.pack()
+        #max_label = tk.Label(self.root, text="Enter new maximum number of racks:")
+        #max_label.pack()
         
-        self.max_entry = tk.Entry(self.root)
-        self.max_entry.pack()
+        #self.max_entry = tk.Entry(self.root)
+        #self.max_entry.pack()
 
         # Create a button for changing the maximum number of racks
-        change_max_button = tk.Button(self.root, text="Change Maximum", command=self.change_max_racks)
-        change_max_button.pack()
+        #change_max_button = tk.Button(self.root, text="Change Maximum", command=self.change_max_racks)
+        #change_max_button.pack()
+        
+        
+        tips_label = tk.Label(self.root, text="Enter new number of tips:")
+        tips_label.pack()
+     
+        self.tips_entry = tk.Entry(self.root)
+        self.tips_entry.pack()
 
-
-
-
+        # Create a button for changing the number of tips
+        change_tips_button = tk.Button(self.root, text="Change Tips", command=self.change_tips)
+        change_tips_button.pack()
 
     def run(self):
         self.root.mainloop()
         
     def save(self):
         # Write the updated JSON data to a file
-        with open("template.json", "w") as f:
+        with open(self.json_path, "w") as f:
             json.dump(self.json_data, f, indent=4)
+    
+    def change_tips(self):
+    # Get the new number of tips from the entry form
+        new_tips = self.tips_entry.get()
+
+    # Get the selected rack node
+        selected_item = self.tree.selection()[0]
+
+    # If an item is not selected or if the selected item is a stack, return
+        if not selected_item or not self.tree.parent(selected_item):
+            print("Not a rack")
+            return
+
+       # Get the rack data from the JSON data
+        stack_data = next(stack for stack in self.json_data.values() if any(rack["rack_name"] == self.tree.item(selected_item)["text"] for rack in stack["racks"]))
+        rack_data = next(rack for rack in stack_data["racks"] if rack["rack_name"] == self.tree.item(selected_item)["text"])
+
+        # Update the number of tips in the JSON data and the treeview
+        rack_data["num_tips"] = int(new_tips)
+        self.tree.item(selected_item, values=(new_tips))
+        self.save()
     
     def change_stack_name(self):
         # Get the new stack name from the entry form
@@ -99,41 +134,11 @@ class TipRackEditor:
     
         # If an item is not selected or if the selected item is a rack, return
         if not selected_item or self.tree.parent(selected_item):
+            print("Not a stack")
             return
     
         # Get the stack data from the JSON data
-        stack_data = next(stack for stack in self.json_data if stack["stack_name"] == self.tree.item(selected_item)["text"])
-
-        # Update the stack name in the JSON data and the treeview
-        stack_data["stack_name"] = new_name
-        self.tree.item(selected_item, text=new_name)
-        for i, rack in enumerate(stack_data["racks"]):
-            rack["rack_name"] = new_name + "_" + str(i + 1).zfill(2)
-            self.tree.item(self.tree.get_children(selected_item)[i], text=rack["rack_name"])
-
-
-
-    def run(self):
-        self.root.mainloop()
-        
-    def save(self):
-        # Write the updated JSON data to a file
-        with open("template.json", "w") as f:
-            json.dump(self.json_data, f, indent=4)
-    
-    def change_stack_name(self):
-        # Get the new stack name from the entry form
-        new_name = self.name_entry.get()
-
-        # Get the selected stack node
-        selected_item = self.tree.selection()[0]
-    
-        # If an item is not selected or if the selected item is a rack, return
-        if not selected_item or self.tree.parent(selected_item):
-            return
-    
-        # Get the stack data from the JSON data
-        stack_data = next(stack for stack in self.json_data if stack["stack_name"] == self.tree.item(selected_item)["text"])
+        stack_data = next(self.json_data[stack] for stack in self.json_data if stack["stack_name"] == self.tree.item(selected_item)["text"])
 
         # Update the stack name in the JSON data and the treeview
         stack_data["stack_name"] = new_name
@@ -145,7 +150,7 @@ class TipRackEditor:
         for i, child in enumerate(self.tree.get_children(selected_item)):
             self.tree.item(child, text=stack_data["racks"][i]["rack_name"])
 
-
+        self.save()
 
 
     def change_max_racks(self):
@@ -160,7 +165,7 @@ class TipRackEditor:
             return
 
         # Get the stack data from the JSON data
-        stack_data = next(stack for stack in self.json_data if stack["stack_name"] == self.tree.item(selected_item)["text"])
+        stack_data = next(self.json_data[stack] for stack in self.json_data if stack["stack_name"] == self.tree.item(selected_item)["text"])
 
         # Update the maximum number of racks in the JSON data and the treeview
         stack_data["max_tip_racks"] = new_max
@@ -171,14 +176,28 @@ class TipRackEditor:
         # Add a new stack to the list with a default name and number of tip racks
         new_stack = {
             "stack_name": "New Stack",
-            "max_tip_racks": 2,
+            "max_tip_racks": 4,
             "racks": []
-        }
-        self.json_data.append(new_stack)
-
+            }
+        
+        self.json_data["New Stack"] = new_stack
+        
         # Add the new stack to the treeview
         stack_node = self.tree.insert("", "end", text=new_stack["stack_name"], values=(new_stack["max_tip_racks"]))
+        self.save()
+    
+    def remove_stack(self):
+        
+        selected_stack = self.tree.selection()[0]
+        stack_key = (self.tree.item(selected_stack, "text"))
+        # Remove the selected stack
+        self.json_data.pop(stack_key)
 
+        # Add the new stack to the treeview
+        self.tree.delete(selected_stack)
+        self.save()
+        
+        
     def add_rack(self):
             # Get the selected stack node
         selected_item = self.tree.selection()[0]
@@ -188,7 +207,7 @@ class TipRackEditor:
             return
     
         # Get the stack data from the JSON data
-        stack_data = next(stack for stack in self.json_data if stack["stack_name"] == self.tree.item(selected_item)["text"])
+        stack_data = next(self.json_data[stack] for stack in self.json_data if self.json_data[stack]["stack_name"] == self.tree.item(selected_item)["text"])
         
         if len(stack_data["racks"]) >= stack_data["max_tip_racks"]:
             return
@@ -206,6 +225,8 @@ class TipRackEditor:
     
         # Add the new rack to the treeview
         self.tree.insert(selected_item, "end", text=new_rack["rack_name"], values=(new_rack["num_tips"]))
+        self.save()
+        
     def reset_tips(self):
         # Get the selected rack node
         selected_item = self.tree.selection()[0]
@@ -222,6 +243,7 @@ class TipRackEditor:
         # Reset the number of tips in the rack
         rack_data["num_tips"] = 96
         self.tree.item(selected_item, values=(rack_data["num_tips"]))
+        self.save()
 
 class TipTracker:
     
@@ -240,7 +262,7 @@ class TipTracker:
         
         if not os.path.exists(self.json_path):
             with open(self.json_path, 'w') as f:
-                json.dump([], f)
+                json.dump({}, f)
         
         with open(json_path, "r") as f:
             self.json_data = json.load(f)
@@ -255,14 +277,16 @@ class TipTracker:
     
     def save_json(self):
         json_data = copy.deepcopy(self.json_data)
-        for stack in json_data:
+        for stack_id in json_data: # Loop that removes unserializable data from JSON structure
+            stack = json_data[stack_id]
             for rack in stack['racks']:
-                rack.pop('resource')
+                rack.pop('resource') # Remove unserializable resource item
         with open(self.json_path, "w") as f:
             json.dump(json_data, f)
 
     def assign_resources(self):
-        for stack in self.json_data:
+        for stack_id in self.json_data:
+            stack = self.json_data[stack_id]
             for rack in stack['racks']:
                 rack['resource'] = self.lmgr.assign_unused_resource(ResourceType(Tip96, rack['rack_name']))
             
@@ -272,15 +296,17 @@ class TipTracker:
         If the top rack does not have enough tips, the next rack is discarded and the
         function is called again.
         """
-        for stack_idx, stack in enumerate(self.json_data):
+        for stack_idx, stack_id in enumerate(self.json_data):
+            stack = self.json_data[stack_id]
             racks = stack['racks']
             top_rack_idx = max([i for i, rack in enumerate(racks) if not rack['excluded']])
             rack = stack['racks'][top_rack_idx]
             if not rack['excluded'] and rack['num_tips'] >= num_tips:
                 current_tip = 96 - rack['num_tips']
                 resource = rack['resource']
+                print(resource._layout_name)
                 tips_list = [(resource, tip) for tip in range(current_tip, current_tip + num_tips)]
-                self.json_data[stack_idx]['racks'][top_rack_idx]['num_tips'] -= num_tips
+                self.json_data[stack_id]['racks'][top_rack_idx]['num_tips'] -= num_tips
                 self.save_json()
                 return tips_list
         self.discard_next_rack()
