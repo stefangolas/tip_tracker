@@ -151,7 +151,7 @@ class TipTracker:
         #self.json_data[stack][rack]['num_tips'] = int(new_tips)
         self.json_data[stack_key]["racks"][rack_num]["num_tips"] = new_tips
         if new_tips > 0:
-            self.json_data[stack_key]["racks"][rack_num]['discarded']
+            self.json_data[stack_key]["racks"][rack_num]['discarded'] = False
         
         self.tree.item(selected_item, values=(new_tips))
         
@@ -277,13 +277,23 @@ class TipTracker:
             return
 
         # Get the rack data from the JSON data
-        stack_node = self.tree.parent(selected_item)
-        stack_data = next(self.json_data[stack] for stack in self.json_data if self.json_data[stack]["stack_name"] == self.tree.item(stack_node)["text"])
-        rack_data = next(rack for rack in stack_data["racks"] if rack["rack_name"] == self.tree.item(selected_item)["text"])
-
+        #stack_node = self.tree.parent(selected_item)
+        #stack_data = next(self.json_data[stack] for stack in self.json_data if self.json_data[stack]["stack_name"] == self.tree.item(stack_node)["text"])
+        #rack_data = next(rack for rack in stack_data["racks"] if rack["rack_name"] == self.tree.item(selected_item)["text"])
+        
         # Reset the number of tips in the rack
-        rack_data["num_tips"] = 96
-        self.tree.item(selected_item, values=(rack_data["num_tips"]))
+        #rack_data["num_tips"] = 96
+        #rack_data["discarded"] = False
+        
+        stack_key = next(stack for stack in self.json_data if any(rack["rack_name"] == self.tree.item(selected_item)["text"] for rack in self.json_data[stack]["racks"]))
+        rack_num, rack = next(rack for rack in enumerate(self.json_data[stack_key]["racks"]) if rack[1]["rack_name"] == self.tree.item(selected_item)["text"])
+                
+        # Update the number of tips in the JSON data and the treeview
+        self.json_data[stack_key]["racks"][rack_num]["num_tips"] = 96
+        self.json_data[stack_key]["racks"][rack_num]['discarded'] = False            
+
+        
+        self.tree.item(selected_item, values=(96))
         self.save()
 
     
@@ -325,9 +335,7 @@ class TipTracker:
                 resource = rack['resource']
                 tips_list = [(resource, tip) for tip in range(current_tip, current_tip + num_tips)]
                 self.json_data[stack_id]['racks'][top_rack_idx]['num_tips'] -= num_tips
-                print(tips_list)
-                tip_pick_up(ham_int, tips_list)
-                
+                tip_pick_up(self.hamilton_interface, tips_list)
                 self.save()
                 return
         
