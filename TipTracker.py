@@ -20,7 +20,8 @@ from pyhamilton import (HamiltonInterface,  LayoutManager,
 
 class TipTracker:
     
-    def __init__(self, json_path, deck_path, hamilton_interface, waste_seq, tool_seq):
+    def __init__(self, json_path, deck_path, hamilton_interface, waste_seq, tool_seq, 
+                 gripHeight = 5, gripWidth = 90, openWidth = 100):
         
         """
         The JSON file contains a list of objects, where each object represents 
@@ -44,7 +45,10 @@ class TipTracker:
         self.hamilton_interface = hamilton_interface
         self.waste_seq = waste_seq
         self.tool_seq = tool_seq
-
+        self.gripHeight = gripHeight
+        self.gripWidth = gripWidth
+        self.openWidth = openWidth
+        
         self.assign_resources()
         self.create_gui()
         
@@ -103,19 +107,7 @@ class TipTracker:
 
         # Create a button for changing the stack name
         change_name_button = tk.Button(self.root, text="Change Name", command=self.change_stack_name)
-        change_name_button.pack()
-
-        # Create a label for the entry form for changing the maximum number of racks
-        #max_label = tk.Label(self.root, text="Enter new maximum number of racks:")
-        #max_label.pack()
-        
-        #self.max_entry = tk.Entry(self.root)
-        #self.max_entry.pack()
-
-        # Create a button for changing the maximum number of racks
-        #change_max_button = tk.Button(self.root, text="Change Maximum", command=self.change_max_racks)
-        #change_max_button.pack()
-        
+        change_name_button.pack()        
         
         tips_label = tk.Label(self.root, text="Enter new number of tips:")
         tips_label.pack()
@@ -275,15 +267,6 @@ class TipTracker:
         # If a rack node is not selected, return
         if not self.tree.parent(selected_item):
             return
-
-        # Get the rack data from the JSON data
-        #stack_node = self.tree.parent(selected_item)
-        #stack_data = next(self.json_data[stack] for stack in self.json_data if self.json_data[stack]["stack_name"] == self.tree.item(stack_node)["text"])
-        #rack_data = next(rack for rack in stack_data["racks"] if rack["rack_name"] == self.tree.item(selected_item)["text"])
-        
-        # Reset the number of tips in the rack
-        #rack_data["num_tips"] = 96
-        #rack_data["discarded"] = False
         
         stack_key = next(stack for stack in self.json_data if any(rack["rack_name"] == self.tree.item(selected_item)["text"] for rack in self.json_data[stack]["racks"]))
         rack_num, rack = next(rack for rack in enumerate(self.json_data[stack_key]["racks"]) if rack[1]["rack_name"] == self.tree.item(selected_item)["text"])
@@ -327,7 +310,6 @@ class TipTracker:
         for stack_idx, stack_id in enumerate(self.json_data):
             stack = self.json_data[stack_id]
             racks = stack['racks']
-            print(racks)
             top_rack_idx = max([i for i, rack in enumerate(racks) if not rack['discarded']])
             rack = stack['racks'][top_rack_idx]
             if not rack['discarded'] and rack['num_tips'] >= num_tips:
@@ -406,11 +388,11 @@ class TipTracker:
 if __name__ == "__main__":
     
     with HamiltonInterface(simulate=True) as ham_int:
-        tip_tracker = TipTracker('template.json', 
-                                 'deck.lay', 
-                                 ham_int,
-                                 'tips_waste',
-                                 'COREGripTool')
+        tip_tracker = TipTracker(json_path = 'template.json', 
+                                 deck_path = 'deck.lay', 
+                                 hamilton_interface = ham_int,
+                                 waste_seq = 'tips_waste',
+                                 tool_seq = 'COREGripTool')
         tip_tracker.run_editor()
         initialize(ham_int)
         for i in range(80):
