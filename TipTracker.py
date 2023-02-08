@@ -53,17 +53,13 @@ class TipTracker:
         self.create_gui()
         
         
-        
-
-    
     def create_gui(self):
-        #self.json_path = json_path
+        """
+        Renders a Tkinter GUI with buttons for interacting with the JSON database.
+        """
+        
         root = tk.Tk()
         self.root = root
-       # with open(json_path, "r") as f:
-       #     json_data = json.load(f)
-        
-        #self.json_data = json_data
 
         # Create the treeview
         self.tree = ttk.Treeview(self.root)
@@ -85,8 +81,6 @@ class TipTracker:
         self.tree.configure(yscrollcommand=yscrollbar.set)
         self.tree.pack(side="left", fill="both", expand=True)
         yscrollbar.pack(side="right", fill="y")
-        #save_button = tk.Button(self.root, text="Save", command=self.save)
-        #save_button.pack()
         
         remove_stack_button = tk.Button(root, text="Remove Stack", command=self.remove_stack)
         add_stack_button = tk.Button(root, text="Add Stack", command=self.add_stack)
@@ -116,7 +110,7 @@ class TipTracker:
         self.tips_entry.pack()
 
         # Create a button for changing the number of tips
-        change_tips_button = tk.Button(self.root, text="Change Tips", command=self.change_tips)
+        change_tips_button = tk.Button(self.root, text="Change # of Tips", command=self.change_tips)
         change_tips_button.pack()
 
     def run(self):
@@ -197,6 +191,10 @@ class TipTracker:
 
     
     def add_stack(self):
+        """
+        Adds a stack of tips to the json_data dictionary and GUI window, with 4 full racks by default.
+        New stacks must be renamed to match the name of a stack in the deck layout.
+        """
         # Add a new stack to the list with a default name and number of tip racks
         new_stack = {
             "stack_name": "New_Stack",
@@ -232,7 +230,10 @@ class TipTracker:
         
         
     def add_rack(self):
-            # Get the selected stack node
+        """
+        Adds a rack to a stack of tips.
+        """
+        # Get the selected stack node
         selected_item = self.tree.selection()[0]
     
         # If an item is not selected or if the selected item is a rack, return
@@ -261,6 +262,10 @@ class TipTracker:
         self.save()
         
     def reset_tips(self):
+        """
+        Set the number of tips in the selected rack to 96. 
+        Triggered by the user pressing the Reset Tips button.
+        """
         # Get the selected rack node
         selected_item = self.tree.selection()[0]
 
@@ -282,6 +287,9 @@ class TipTracker:
     
     
     def save(self):
+        """
+        Writes the json_data dictionary to a JSON file
+        """
         json_data = copy.deepcopy(self.json_data)
         for stack_id in json_data: # Loop that removes unserializable data from JSON structure
             stack = json_data[stack_id]
@@ -291,6 +299,9 @@ class TipTracker:
             json.dump(json_data, f)
 
     def assign_resources(self):
+        """
+        Adds a resource key to the json_data dictionary at run-time for non-serializable DeckResource objects.
+        """
         for stack_id in list(self.json_data):
             stack = self.json_data[stack_id]
             for rack in stack['racks']:
@@ -326,6 +337,10 @@ class TipTracker:
         
     
     def discard_empty_racks(self):
+        """
+        Loop through stacks and discard any empty racks from the top of the stack
+        using the CO-RE gripper. 
+        """
         for stack_idx, stack_id in enumerate(self.json_data):
             stack = self.json_data[stack_id]
             racks = stack['racks']
@@ -334,13 +349,16 @@ class TipTracker:
             if not rack['discarded'] and rack['num_tips'] == 0:
                 resource = rack['resource']
                 get_plate_gripper_seq(self.hamilton_interface, resource.layout_name(), 
-                                      gripHeight = 5, gripWidth = 90, openWidth=100, lid = False,
+                                      gripHeight = self.gripHeight, gripWidth = self.gripWidth, openWidth=self.openWidth, lid = False,
                                       tool_sequence = self.tool_seq)
                 place_plate_gripper_seq(self.hamilton_interface, self.waste_seq, self.tool_seq)
                 self.json_data[stack_id]['racks'][top_rack_idx]['discarded'] = True
 
         
     def get_96_tips(self):
+        """
+        Use the 96-head to pick up a whole rack of tips from the top of a stack.
+        """
         for stack_idx, stack_id in enumerate(self.json_data):
             stack = self.json_data[stack_id]
             racks = stack['racks']
@@ -349,7 +367,8 @@ class TipTracker:
             if not rack['discarded'] and rack['num_tips'] == 96:
                 resource = rack['resource']
                 self.json_data[stack_id]['racks'][top_rack_idx]['num_tips'] = 0
-                return resource
+                tip_pick_up_96(self.hamilton_interface, resource)
+                self.save()
 
     
     def discard_next_rack(self):
@@ -392,7 +411,10 @@ if __name__ == "__main__":
                                  deck_path = 'deck.lay', 
                                  hamilton_interface = ham_int,
                                  waste_seq = 'tips_waste',
-                                 tool_seq = 'COREGripTool')
+                                 tool_seq = 'COREGripTool',
+                                 gripHeight = 5,
+                                 gripWidth = 90,
+                                 openWidth = 100)
         tip_tracker.run_editor()
         initialize(ham_int)
         for i in range(80):
