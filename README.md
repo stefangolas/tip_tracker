@@ -22,7 +22,11 @@ if __name__ == "__main__":
                                  deck_path = 'deck.lay', 
                                  hamilton_interface = ham_int,
                                  waste_seq = 'tips_waste',
-                                 tool_seq = 'COREGripTool')
+                                 tool_seq = 'COREGripTool'
+                                 gripHeight = 5,
+                                 gripWidth = 90,
+                                 openWidth = 100)
+)
         tip_tracker.run_editor()
         initialize(ham_int)
         for i in range(80):
