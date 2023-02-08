@@ -1,8 +1,18 @@
 # Tip Tracker
 
-PyHamilton application for tracking tips
+PyHamilton application for tracking tips, similar to Visual NTR.
 
-# Example Usage
+The `TipTracker` class allows the user to track and restock stacked tips across experiments.
+Tips are access with either `get_tips(n)` or `get_96_tips()` methods, which pick up the
+specified number of tips and automatically subtract the number from the `json_data` dictionary,
+and updating the corresponding json file.
+
+When a rack is empty, it will be discarded by the CO-RE gripper and the corresponding `json_data`
+dictionary entry for that rack will be marked `['discarded'] = True`.
+
+The method `run_editor()` will open a window for the user to reset the numbers of tips or edit stacks.
+
+## Example Usage
 
 ```python
 if __name__ == "__main__":
@@ -20,3 +30,10 @@ if __name__ == "__main__":
             tip_eject(ham_int)
 
 ```
+
+## JSON Database
+
+The JSON database tracks the number of tips in a json file that is generated from the `json_data` dictionary attribute of `TipTracker`. This 
+
+
+
