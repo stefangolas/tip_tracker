@@ -50,4 +50,5 @@ The JSON database tracks the number of tips in a json file that is generated fro
 ```
 
 
-
+## GUI
+[](https://github.com/stefangolas/tip_tracker/blob/main/images/tkinter.png)
