@@ -8,16 +8,15 @@ PyHamilton application for tracking tips
 if __name__ == "__main__":
     
     with HamiltonInterface(simulate=True) as ham_int:
-        tip_tracker = TipTracker('template.json', 
-                                 'deck.lay', 
-                                 ham_int,
-                                 'tips_waste',
-                                 'COREGripTool')
+        tip_tracker = TipTracker(json_path = 'template.json', 
+                                 deck_path = 'deck.lay', 
+                                 hamilton_interface = ham_int,
+                                 waste_seq = 'tips_waste',
+                                 tool_seq = 'COREGripTool')
         tip_tracker.run_editor()
         initialize(ham_int)
-        for i in range(30):
-            tips_poss = tip_tracker.get_tips(4)
-            tip_pick_up(ham_int, tips_poss)
+        for i in range(80):
+            tip_tracker.get_tips(4)
             tip_eject(ham_int)
 
 ```
