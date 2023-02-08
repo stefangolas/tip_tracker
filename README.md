@@ -26,7 +26,6 @@ if __name__ == "__main__":
                                  gripHeight = 5,
                                  gripWidth = 90,
                                  openWidth = 100)
-)
         tip_tracker.run_editor()
         initialize(ham_int)
         for i in range(80):
