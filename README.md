@@ -3,7 +3,7 @@
 PyHamilton application for tracking tips, similar to Visual NTR.
 
 The `TipTracker` class allows the user to track and restock stacked tips across experiments.
-Tips are access with either `get_tips(n)` or `get_96_tips()` methods, which pick up the
+Tips are accessed with either `get_tips(n)` or `get_96_tips()` methods, which pick up the
 specified number of tips and automatically subtract the number from the `json_data` dictionary,
 and updating the corresponding json file.
 
