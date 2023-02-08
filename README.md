@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
 ## JSON Database
 
-The JSON database tracks the number of tips in a json file that is generated from the `json_data` dictionary attribute of `TipTracker`. Here is an example of the JSON database, with one stack containing one rack of tips
+The JSON database tracks the number of tips in a json file that is generated from the `json_data` dictionary attribute of `TipTracker`. Here is an example of the JSON database, with one stack containing one rack of tips.
 
 ```json
 {
