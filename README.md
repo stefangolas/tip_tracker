@@ -46,9 +46,8 @@ The JSON database tracks the number of tips in a json file that is generated fro
                 "num_tips": 96,
                 "discarded": false
             }
-            ...]
+           ]
       }
-    ...
 }
 ```
 
