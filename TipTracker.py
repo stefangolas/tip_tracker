@@ -40,7 +40,8 @@ class TipTracker:
         
         with open(json_path, "r") as f:
             self.json_data = json.load(f)
-            
+        
+        
         self.lmgr = LayoutManager(deck_path)
         self.hamilton_interface = None
         self.waste_seq = waste_seq
@@ -210,7 +211,8 @@ class TipTracker:
             } for i in range(1,5)]
         }
         
-        self.json_data["New Stack"] = new_stack
+        stack_idx = len(self.json_data)
+        self.json_data["New Stack " + str(stack_idx)] = new_stack
         
         # Add the new stack to the treeview
         stack_node = self.tree.insert("", "end", text=new_stack["stack_name"], values=(new_stack["max_tip_racks"]))
