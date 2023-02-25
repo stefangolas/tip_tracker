@@ -3,7 +3,7 @@
 PyHamilton application for tracking tips, similar to Visual NTR.
 
 The `TipTracker` class allows the user to track and restock stacked tips across experiments.
-Tips are access with either `get_tips(n)` or `get_96_tips()` methods, which pick up the
+Tips are accessed with either `get_tips(n)` or `get_96_tips()` methods, which pick up the
 specified number of tips and automatically subtract the number from the `json_data` dictionary,
 and updating the corresponding json file.
 
@@ -22,7 +22,10 @@ if __name__ == "__main__":
                                  deck_path = 'deck.lay', 
                                  hamilton_interface = ham_int,
                                  waste_seq = 'tips_waste',
-                                 tool_seq = 'COREGripTool')
+                                 tool_seq = 'COREGripTool'
+                                 gripHeight = 5,
+                                 gripWidth = 90,
+                                 openWidth = 100)
         tip_tracker.run_editor()
         initialize(ham_int)
         for i in range(80):
@@ -50,4 +53,6 @@ The JSON database tracks the number of tips in a json file that is generated fro
 ```
 
 
-
+## GUI
+Access with `run_editor()` <br>
+![](https://github.com/stefangolas/tip_tracker/blob/main/images/tkinter.png)
