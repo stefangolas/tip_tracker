@@ -20,7 +20,7 @@ from pyhamilton import (HamiltonInterface,  LayoutManager,
 
 class TipTracker:
     
-    def __init__(self, json_path, deck_path, hamilton_interface, waste_seq, tool_seq, 
+    def __init__(self, json_path, deck_path, waste_seq, tool_seq,
                  gripHeight = 5, gripWidth = 90, openWidth = 100):
         
         """
@@ -42,7 +42,7 @@ class TipTracker:
             self.json_data = json.load(f)
             
         self.lmgr = LayoutManager(deck_path)
-        self.hamilton_interface = hamilton_interface
+        self.hamilton_interface = None
         self.waste_seq = waste_seq
         self.tool_seq = tool_seq
         self.gripHeight = gripHeight
@@ -52,7 +52,10 @@ class TipTracker:
         self.assign_resources()
         self.create_gui()
         
-        
+    
+    def apply_interface(self, hamilton_interface):
+        self.hamilton_interface = hamilton_interface
+    
     def create_gui(self):
         """
         Renders a Tkinter GUI with buttons for interacting with the JSON database.
@@ -405,16 +408,18 @@ class TipTracker:
         
 
 if __name__ == "__main__":
-    
-    with HamiltonInterface(simulate=True) as ham_int:
-        tip_tracker = TipTracker(json_path = 'template.json', 
+    tip_tracker = TipTracker(json_path = 'newfile.json', 
                                  deck_path = 'deck.lay', 
-                                 hamilton_interface = ham_int,
                                  waste_seq = 'tips_waste',
                                  tool_seq = 'COREGripTool',
                                  gripHeight = 5,
                                  gripWidth = 90,
                                  openWidth = 100)
+    
+    
+    input("")
+    with HamiltonInterface(simulate=True) as ham_int:
+        tip_tracker.apply_interface(ham_int)
         tip_tracker.run_editor()
         initialize(ham_int)
         for i in range(80):
