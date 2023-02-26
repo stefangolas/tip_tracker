@@ -12,6 +12,10 @@ dictionary entry for that rack will be marked `['discarded'] = True`.
 
 The method `run_editor()` will open a window for the user to reset the numbers of tips or edit stacks.
 
+Initializing a TipTracker object with a path to a .json that doesn't exist will create an empty .json.
+Use the editor window to fill out the stacks for a new TipTracker object, don't try to create it
+manually in a text editor.
+
 ## Example Usage
 
 ```python
