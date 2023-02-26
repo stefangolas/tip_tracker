@@ -42,12 +42,10 @@ if __name__ == '__main__':
         tip_tracker_NTR50_MPH.apply_interface(ham_int)
         tip_tracker_NTR300_ch.apply_interface(ham_int)
 
-
         for i in range(8):
             # NTR50 MPH
             tip_tracker_NTR50_MPH.get_96_tips()
             tip_eject_96(ham_int)
-            
             
         for i in range(90):
             # NTR300
