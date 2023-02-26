@@ -332,7 +332,10 @@ class TipTracker:
         for stack_idx, stack_id in enumerate(self.json_data):
             stack = self.json_data[stack_id]
             racks = stack['racks']
-            top_rack_idx = max([i for i, rack in enumerate(racks) if not rack['discarded']])
+            try:
+                top_rack_idx = max([i for i, rack in enumerate(racks) if not rack['discarded']])
+            except ValueError:
+                raise Exception("No tips remaining in any stack")
             rack = stack['racks'][top_rack_idx]
             if not rack['discarded'] and rack['num_tips'] >= num_tips:
                 current_tip = 96 - rack['num_tips']
@@ -374,7 +377,10 @@ class TipTracker:
         for stack_idx, stack_id in enumerate(self.json_data):
             stack = self.json_data[stack_id]
             racks = stack['racks']
-            top_rack_idx = max([i for i, rack in enumerate(racks) if not rack['discarded']])
+            try:
+                top_rack_idx = max([i for i, rack in enumerate(racks) if not rack['discarded']])
+            except ValueError:
+                raise Exception("No tips remaining in any stack")
             rack = stack['racks'][top_rack_idx]
             if not rack['discarded'] and rack['num_tips'] == 96:
                 resource = rack['resource']
