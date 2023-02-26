@@ -15,21 +15,46 @@ The method `run_editor()` will open a window for the user to reset the numbers o
 ## Example Usage
 
 ```python
-if __name__ == "__main__":
-    
+tip_tracker_NTR300_ch = TipTracker('NTR300_channels.json',
+                        'FN Deck Layout.lay',
+                        'Waste_NTR50',
+                        'COREGripTool_OnWaste_1000ul_0001',
+                        gripHeight = 5,
+                        gripWidth = 90,
+                        openWidth = 100)
+
+tip_tracker_NTR300_ch.run_editor()
+
+tip_tracker_NTR50_MPH = TipTracker('NTR50_MPH.json',
+                       'FN Deck Layout.lay',
+                       'Waste_NTR50',
+                       'COREGripTool_OnWaste_1000ul_0001',
+                       gripHeight = 5,
+                       gripWidth = 90,
+                       openWidth = 100)
+tip_tracker_NTR50_MPH.run_editor()
+
+
+
+
+if __name__ == '__main__':
     with HamiltonInterface(simulate=True) as ham_int:
-        tip_tracker = TipTracker(json_path = 'template.json', 
-                                 deck_path = 'deck.lay', 
-                                 hamilton_interface = ham_int,
-                                 waste_seq = 'tips_waste',
-                                 tool_seq = 'COREGripTool'
-                                 gripHeight = 5,
-                                 gripWidth = 90,
-                                 openWidth = 100)
-        tip_tracker.run_editor()
         initialize(ham_int)
-        for i in range(80):
-            tip_tracker.get_tips(4)
+        normal_logging(ham_int, os.getcwd())
+
+        tip_tracker_NTR50_MPH.apply_interface(ham_int)
+        tip_tracker_NTR300_ch.apply_interface(ham_int)
+
+
+        for i in range(8):
+            # NTR50 MPH
+            tip_tracker_NTR50_MPH.get_96_tips()
+            tip_eject_96(ham_int)
+            
+            
+        for i in range(90):
+            # NTR300
+            tip_tracker_NTR300_ch.get_tips(8)
             tip_eject(ham_int)
 
 ```
