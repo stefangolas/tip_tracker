@@ -56,6 +56,7 @@ class TipTracker:
     
     def apply_interface(self, hamilton_interface):
         self.hamilton_interface = hamilton_interface
+        self.assign_resources()
     
     def create_gui(self):
         """
@@ -64,6 +65,9 @@ class TipTracker:
         
         root = tk.Tk()
         self.root = root
+        
+        title = self.json_path.split('.')[0]
+        root.title(title)
 
         # Create the treeview
         self.tree = ttk.Treeview(self.root)
@@ -310,6 +314,8 @@ class TipTracker:
         for stack_id in list(self.json_data):
             stack = self.json_data[stack_id]
             for rack in stack['racks']:
+                if 'resource' in rack:
+                    continue
                 try:
                     rack['resource'] = self.lmgr.assign_unused_resource(ResourceType(Tip96, rack['rack_name']))
                 except ResourceUnavailableError:
@@ -337,7 +343,7 @@ class TipTracker:
                 self.save()
                 return
         
-        self.discard_next_rack()
+        self.discard_empty_racks()
         self.get_tips(num_tips)
         
     
@@ -358,7 +364,8 @@ class TipTracker:
                                       tool_sequence = self.tool_seq)
                 place_plate_gripper_seq(self.hamilton_interface, self.waste_seq, self.tool_seq)
                 self.json_data[stack_id]['racks'][top_rack_idx]['discarded'] = True
-
+        
+        
         
     def get_96_tips(self):
         """
@@ -374,6 +381,9 @@ class TipTracker:
                 self.json_data[stack_id]['racks'][top_rack_idx]['num_tips'] = 0
                 tip_pick_up_96(self.hamilton_interface, resource)
                 self.save()
+                return
+        self.discard_empty_racks()
+        self.get_96_tips()
 
     
     def discard_next_rack(self):
@@ -421,6 +431,7 @@ if __name__ == "__main__":
     
     input("")
     with HamiltonInterface(simulate=True) as ham_int:
+        initialize(ham_int)
         tip_tracker.apply_interface(ham_int)
         tip_tracker.run_editor()
         initialize(ham_int)
