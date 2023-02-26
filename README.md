@@ -34,9 +34,6 @@ tip_tracker_NTR50_MPH = TipTracker('NTR50_MPH.json',
                        openWidth = 100)
 tip_tracker_NTR50_MPH.run_editor()
 
-
-
-
 if __name__ == '__main__':
     with HamiltonInterface(simulate=True) as ham_int:
         initialize(ham_int)
